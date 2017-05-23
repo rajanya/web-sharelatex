@@ -30,7 +30,7 @@
 			return -1;
 		};
 	}
-	angular.module('mvdSixpack', ['ngCookies'])
+	angular.module('mvdSixpack', [])
 		.provider('sixpack', function() {
 			var $body
 				, _tests = []
@@ -45,18 +45,57 @@
 				angular.extend(_opts, options || {});
 			}
 
-			this.$get = ['$cookies','$timeout', '$log', function($cookies, $timeout, $log) {
+			this.$get = ['$timeout', '$log', function($timeout, $log) {
 				var _cookiePrefix = 'sixpack-'
 					, _session
 					, _clientId;
 
+
+				var getCookies = function () {
+					var c = $document[0].cookie, v = 0, cookies = {};
+					if (document.cookie.match(/^\s*\$Version=(?:"1"|1);\s*(.*)/)) {
+						c = RegExp.$1;
+						v = 1;
+					}
+					if (v === 0) {
+						c.split(/[,;]/).map(function(cookie) {
+							var parts = cookie.split(/=/, 2),
+								name = decodeURIComponent(parts[0].trimLeft()),
+								value = parts.length > 1 ? decodeURIComponent(parts[1].trimRight()) : null;
+							cookies[name] = value;
+						});
+					} else {
+						c.match(/(?:^|\s+)([!#$%&'*+\-.0-9A-Z^`a-z|~]+)=([!#$%&'*+\-.0-9A-Z^`a-z|~]*|"(?:[\x20-\x7E\x80\xFF]|\\[\x00-\x7F])*")(?=\s*[,;]|$)/g).map(function($0, $1) {
+							var name = $0,
+								value = $1.charAt(0) === '"'
+										  ? $1.substr(1, -1).replace(/\\(.)/g, "$1")
+										  : $1;
+							cookies[name] = value;
+						});
+					}
+					return cookies;
+				};
+
+				var getCookie = function (key) {
+					return getCookies()[key];
+				};
+
+				var setCookie = function (key, val) {
+					$document[0].cookie = [
+						encodeURIComponent(key),
+						'=',
+						encodeURIComponent(value),
+					].join('');
+				};
+
 				var _getOrInitSession = function () {
 					if (!_session) {
-						if (_clientId = $cookies[_cookiePrefix + 'clientId']) {
+						if (_clientId = getCookie(_cookiePrefix + 'clientId')) {
 							_session = new sp.Session({client_id:_clientId, base_url:_opts.baseUrl});
 						} else {
 							_session = new sp.Session({client_id:_opts.client_id, base_url:_opts.baseUrl});
-							$cookies[_cookiePrefix + 'clientId'] = _clientId = _session.client_id;
+							_clientId = _session.client_id;
+							setCookie(_cookiePrefix + 'clientId', _clientId);
 						}
 						if (_opts.debug) {
 							$log.debug('[sixpack] Initialized session with clientId', _clientId, 'and base url', _opts.baseUrl);
