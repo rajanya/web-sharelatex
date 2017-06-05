@@ -212,29 +212,53 @@ define [
 			@updateAnnotations()
 
 		rejectChangeIds: (change_ids) ->
-			changes = @rangesTracker.getChanges(change_ids)
-			return if changes.length == 0
-			changes.sort((a, b) -> b.op.p - a.op.p)
-
 			session = @editor.getSession()
-			for change in changes
-				if change.op.d?
-					content = change.op.d
-					position = @_shareJsOffsetToAcePosition(change.op.p)
-					session.$fromReject = true # Tell track changes to cancel out delete
-					session.insert(position, content)
-					session.$fromReject = false
-				else if change.op.i?
-					start = @_shareJsOffsetToAcePosition(change.op.p)
-					end = @_shareJsOffsetToAcePosition(change.op.p + change.op.i.length)
-					editor_text = session.getDocument().getTextRange({start, end})
-					if editor_text != change.op.i
-						throw new Error("Op to be removed (#{JSON.stringify(change.op)}), does not match editor text, '#{editor_text}'")
-					session.$fromReject = true
-					session.remove({start, end})
-					session.$fromReject = false
-				else
-					throw new Error("unknown change: #{JSON.stringify(change)}")
+			# This will log changes grabbed before we do any work; all should be present.
+			console.log @rangesTracker.getChanges(change_ids)
+			for id in change_ids
+				change = @rangesTracker.getChange(id)
+				# This will log changes grabbed as we reject stuff; if we have adjacent inserts and deletes, some will be missing.
+				console.log change?.op
+				if change? 
+					if change.op.d?
+						content = change.op.d
+						position = @_shareJsOffsetToAcePosition(change.op.p)
+						session.$fromReject = true # Tell track changes to cancel out delete
+						session.insert(position, content)
+						session.$fromReject = false
+					else if change.op.i?
+						start = @_shareJsOffsetToAcePosition(change.op.p)
+						end = @_shareJsOffsetToAcePosition(change.op.p + change.op.i.length)
+						editor_text = session.getDocument().getTextRange({start, end})
+						if editor_text != change.op.i
+							throw new Error("Op to be removed (#{JSON.stringify(change.op)}), does not match editor text, '#{editor_text}'")
+						session.$fromReject = true
+						session.remove({start, end})
+						session.$fromReject = false
+					else
+						throw new Error("unknown change: #{JSON.stringify(change)}")
+
+			# changes = @rangesTracker.getChanges(change_ids)
+			# return if changes.length == 0
+			# session = @editor.getSession()
+			# for change in changes
+			# 	if change.op.d?
+			# 		content = change.op.d
+			# 		position = @_shareJsOffsetToAcePosition(change.op.p)
+			# 		session.$fromReject = true # Tell track changes to cancel out delete
+			# 		session.insert(position, content)
+			# 		session.$fromReject = false
+			# 	else if change.op.i?
+			# 		start = @_shareJsOffsetToAcePosition(change.op.p)
+			# 		end = @_shareJsOffsetToAcePosition(change.op.p + change.op.i.length)
+			# 		editor_text = session.getDocument().getTextRange({start, end})
+			# 		if editor_text != change.op.i
+			# 			throw new Error("Op to be removed (#{JSON.stringify(change.op)}), does not match editor text, '#{editor_text}'")
+			# 		session.$fromReject = true
+			# 		session.remove({start, end})
+			# 		session.$fromReject = false
+			# 	else
+			# 		throw new Error("unknown change: #{JSON.stringify(change)}")
 
 		removeCommentId: (comment_id) ->
 			@rangesTracker.removeCommentId(comment_id)
