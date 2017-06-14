@@ -347,11 +347,11 @@ define [
 		getRootDocOverride_id = () ->
 			doc = ide.editorManager.getCurrentDocValue()
 			return null if !doc?
-			for line in doc.split("\n")
-				match = line.match /^[^%]*\\documentclass/
-				if match
-					return ide.editorManager.getCurrentDocId()
-			return null
+			#for line in doc.split("\n")
+			#	match = line.match /^[^%]*\\documentclass/
+			#	if match
+			return ide.editorManager.getCurrentDocId()
+			#return null
 
 		normalizeFilePath = (path) ->
 			path = path.replace(/^(.*)\/compiles\/[0-9a-f]{24}(-[0-9a-f]{24})?\/(\.\/)?/, "")
