@@ -150,6 +150,8 @@ module.exports = ClsiManager =
 								check: options.check
 							rootResourcePath: rootResourcePath
 							resources: resources
+							csrf: options.csrf
+							folder_id: options.folder_id
 					}
 
 	wordCount: (project_id, user_id, file, options, callback = (error, response) ->) ->

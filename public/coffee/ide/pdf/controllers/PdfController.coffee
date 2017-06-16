@@ -90,6 +90,7 @@ define [
 			params = {}
 			if options.isAutoCompile
 				params["auto_compile"]=true
+			params["folder_id"] = options.folder_id or null
 			# if the previous run was a check, clear the error logs
 			$scope.pdf.logEntries = [] if $scope.check
 			# keep track of whether this is a compile or check
@@ -383,7 +384,9 @@ define [
 			ide.$scope.$broadcast("flush-changes")
 
 			options.rootDocOverride_id = getRootDocOverride_id()
-
+			folder = ide.fileTreeManager.getCurrentFolder()
+			options.folder_id = folder?.id 
+			
 			sendCompileRequest(options)
 				.success (data) ->
 					$scope.pdf.view = "pdf"

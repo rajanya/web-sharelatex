@@ -16,10 +16,13 @@ module.exports = CompileController =
 		res.setTimeout(5 * 60 * 1000)
 		project_id = req.params.Project_id
 		isAutoCompile = !!req.query?.auto_compile
+		folder_id = req.query?.folder_id
 		user_id = AuthenticationController.getLoggedInUserId req
 		options = {
 			isAutoCompile: isAutoCompile
+			folder_id: folder_id
 		}
+		
 		if req.body?.rootDoc_id?
 			options.rootDoc_id = req.body.rootDoc_id
 		else if req.body?.settingsOverride?.rootDoc_id? # Can be removed after deploy
@@ -30,6 +33,7 @@ module.exports = CompileController =
 			options.draft = req.body.draft
 		if req.body?.check in ['validate', 'error', 'silent']
 			options.check = req.body.check
+		
 		logger.log {options:options, project_id:project_id, user_id:user_id}, "got compile request"
 		CompileManager.compile project_id, user_id, options, (error, status, outputFiles, clsiServerId, limits, validationProblems) ->
 			return next(error) if error?

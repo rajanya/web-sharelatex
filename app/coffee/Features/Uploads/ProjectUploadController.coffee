@@ -28,6 +28,10 @@ module.exports = ProjectUploadController =
 
 	uploadFile: (req, res, next) ->
 		timer = new metrics.Timer("file-upload")
+		logger.info {req}, "upload request details"
+		query = req.query
+		logger.info {query}, "upload request query details"
+
 		name = req.files.qqfile?.originalname
 		path = req.files.qqfile?.path
 		project_id   = req.params.Project_id

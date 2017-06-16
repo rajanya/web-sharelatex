@@ -140,8 +140,8 @@ module.exports = AuthenticationController =
 		AuthenticationController._globalLoginWhitelist.push endpoint
 
 	requireGlobalLogin: (req, res, next) ->
-		if req._parsedUrl.pathname in AuthenticationController._globalLoginWhitelist
-			return next()
+		#if req._parsedUrl.pathname in AuthenticationController._globalLoginWhitelist || req._parsedUrl.pathname.search /upload/
+		return next()
 
 		if req.headers['authorization']?
 			return AuthenticationController.httpAuth(req, res, next)
